@@ -42,13 +42,22 @@ def export_data(year, month, access_token):
     total_pages = data.get("metaDados").get("qtdPaginas", 1)
     current_page = 1
 
+    consecutive_errors = 0
     while current_page < total_pages:
         time.sleep(10)
         current_page += 1
         response = requests.get(f"https://gateway.apilib.prefeitura.sp.gov.br/sf/sof/v4/empenhos?anoEmpenho={year}&mesEmpenho={month}&page={current_page}", headers=headers)
-        data = response.json()
-        page_items = data.get("lstEmpenhos", [])
-        items.extend(page_items)
+        try:
+            data = response.json()
+            page_items = data.get("lstEmpenhos", [])
+            items.extend(page_items)
+            consecutive_errors = 0
+        except Exception as e:
+            consecutive_errors += 1
+            print(f"Error while fetching page {current_page}")
+            if consecutive_errors >= 5:
+                print("Too many consecutive errors. Exiting.")
+                break
 
     for item in items:
         if 'anexos' in item:
