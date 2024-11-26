@@ -30,7 +30,9 @@ def generate_access_token():
     data = response.json()
     return data.get("access_token")
 
-def export_data(year, month, access_token):
+def export_data(year, month):
+    access_token = generate_access_token()
+
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
@@ -44,20 +46,35 @@ def export_data(year, month, access_token):
 
     consecutive_errors = 0
     while current_page < total_pages:
-        time.sleep(10)
+        time.sleep(0.5)
         current_page += 1
-        response = requests.get(f"https://gateway.apilib.prefeitura.sp.gov.br/sf/sof/v4/empenhos?anoEmpenho={year}&mesEmpenho={month}&page={current_page}", headers=headers)
+
+        response = requests.get(f"https://gateway.apilib.prefeitura.sp.gov.br/sf/sof/v4/empenhos?anoEmpenho={year}&mesEmpenho={month}&numPagina={current_page}", headers=headers)
         try:
             data = response.json()
             page_items = data.get("lstEmpenhos", [])
             items.extend(page_items)
             consecutive_errors = 0
         except Exception as e:
+            print(f"Error while fetching page {current_page}. Response: {response.text} | Status Code: {response.status_code}")
+
             consecutive_errors += 1
-            print(f"Error while fetching page {current_page}")
-            if consecutive_errors >= 5:
+
+            if consecutive_errors > 5:
                 print("Too many consecutive errors. Exiting.")
                 break
+
+            if(response.status_code == 401):
+                current_page -= 1
+                access_token = generate_access_token()
+                headers = {
+                    "Authorization": f"Bearer {access_token}"
+                }
+                continue
+
+        progress = (current_page / total_pages) * 100
+        if current_page % 10 == 0:
+            print(f"Progress: {progress:.0f}% ({current_page}/{total_pages})")
 
     for item in items:
         if 'anexos' in item:
@@ -77,6 +94,5 @@ if __name__ == "__main__":
     month = sys.argv[2]
 
     verify_env_variables()
-    access_token = generate_access_token()
-    items = export_data(year, month, access_token)
+    items = export_data(year, month)
     write_parquet_file(year, month, items)
