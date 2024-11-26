@@ -12,6 +12,14 @@ export CONSUMER_KEY=<consumer_key>
 export CONSUMER_SECRET=<consumer_secret>
 ```
 
+- Set the AWS S3 bucket as environment variable:
+
+```sh
+export S3_BUCKET_NAME=<s3_bucket_name>
+```
+
+- Set environment variables for AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_REGION).
+
 - Create a virtual environment and install the dependencies:
 
 ```sh
@@ -27,12 +35,19 @@ pip install -r requirements.txt
 To extract Sao Paulo government data to a parquet file, run the following command:
 
 ```sh
-python3 -v venv venv
-source venv/bin/activate
-pip install -r requirements.txt
 python export_data.py <year> <month>
 ```
 
 Replace `<year>` and `<month>` with the desired period.
 
 The generated parquet file will be located in the `/data` folder.
+
+### Upload the Parquet File to S3
+
+To upload the parquet file to S3, run the following command:
+
+```sh
+python upload_s3.py <year> <month>
+```
+
+Replace `<year>` and `<month>` with the desired period.
