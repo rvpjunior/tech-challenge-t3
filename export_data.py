@@ -79,20 +79,27 @@ def export_data(year, month):
     for item in items:
         if 'anexos' in item:
             del item['anexos']
+            item["mesEmpenho"] = int(item["datEmpenho"].split('/')[1])
 
     return items
 
-def write_parquet_file(year, month, items):
+def write_parquet_file(year, items):
     df = pd.DataFrame(items)
-    df.to_parquet(f"data/transacoes_{year}_{month}.parquet", index=False)
+    df.to_parquet(f"data/transacoes_{year}.parquet", index=False)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        raise ValueError("Please provide both year and month as arguments.")
+    if len(sys.argv) != 2:
+        raise ValueError("Please provide year as argument.")
 
     year = sys.argv[1]
-    month = sys.argv[2]
+    current_year = time.localtime().tm_year
+    current_month = time.localtime().tm_mon
+
+    if int(year) != current_year:
+        month = 12
+    else:
+        month = current_month - 1
 
     verify_env_variables()
     items = export_data(year, month)
-    write_parquet_file(year, month, items)
+    write_parquet_file(year, items)
