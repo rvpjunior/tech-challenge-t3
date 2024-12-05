@@ -35,10 +35,10 @@ pip install -r requirements.txt
 To extract Sao Paulo government data to a parquet file, run the following command:
 
 ```sh
-python export_data.py <year> <month>
+python export_data.py <year> <start_page> <end_page>
 ```
 
-Replace `<year>` and `<month>` with the desired period.
+Replace `<year>` with the desired period and `<start_page>` and `<end_page>` with the desired interval.
 
 The generated parquet file will be located in the `/data` folder.
 
@@ -47,7 +47,5 @@ The generated parquet file will be located in the `/data` folder.
 To upload the parquet file to S3, run the following command:
 
 ```sh
-python upload_s3.py <year> <month>
+python upload_s3.py <file>
 ```
-
-Replace `<year>` and `<month>` with the desired period.

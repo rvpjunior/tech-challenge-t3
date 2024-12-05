@@ -30,22 +30,22 @@ def generate_access_token():
     data = response.json()
     return data.get("access_token")
 
-def export_data(year, month):
+def export_data(year, month, first_page, last_page):
     access_token = generate_access_token()
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-    response = requests.get(f"https://gateway.apilib.prefeitura.sp.gov.br/sf/sof/v4/empenhos?anoEmpenho={year}&mesEmpenho={month}", headers=headers)
+    response = requests.get(f"https://gateway.apilib.prefeitura.sp.gov.br/sf/sof/v4/empenhos?anoEmpenho={year}&mesEmpenho={month}&numPagina={first_page}", headers=headers)
 
     data = response.json()
 
     items = data.get("lstEmpenhos", [])
     total_pages = data.get("metaDados").get("qtdPaginas", 1)
-    current_page = 1
+    current_page = first_page
 
     consecutive_errors = 0
-    while current_page < total_pages:
+    while current_page < total_pages and current_page <= last_page:
         time.sleep(0.5)
         current_page += 1
 
@@ -72,9 +72,10 @@ def export_data(year, month):
                 }
                 continue
 
-        progress = (current_page / total_pages) * 100
+        total_requested_pages = last_page - first_page + 1
+        progress = ((current_page - first_page + 1) / total_requested_pages) * 100
         if current_page % 10 == 0:
-            print(f"Progress: {progress:.0f}% ({current_page}/{total_pages})")
+            print(f"Progress: {progress:.0f}% ({current_page}/{last_page}/{total_pages})")
 
     for item in items:
         if 'anexos' in item:
@@ -83,15 +84,17 @@ def export_data(year, month):
 
     return items
 
-def write_parquet_file(year, items):
+def write_parquet_file(year, items, first_page, last_page):
     df = pd.DataFrame(items)
-    df.to_parquet(f"data/transacoes_{year}.parquet", index=False)
+    df.to_parquet(f"data/transacoes_{year}_{first_page}_{last_page}.parquet", index=False)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        raise ValueError("Please provide year as argument.")
+    if len(sys.argv) != 4:
+        raise ValueError("Please provide year, first and last page as arguments.")
 
     year = sys.argv[1]
+    first_page = int(sys.argv[2])
+    last_page = int(sys.argv[3])
     current_year = time.localtime().tm_year
     current_month = time.localtime().tm_mon
 
@@ -100,6 +103,8 @@ if __name__ == "__main__":
     else:
         month = current_month - 1
 
+    print(f"Exporting data from {year}, pages {first_page} to {last_page}.")
+
     verify_env_variables()
-    items = export_data(year, month)
-    write_parquet_file(year, items)
+    items = export_data(year, month, first_page, last_page)
+    write_parquet_file(year, items, first_page, last_page)
