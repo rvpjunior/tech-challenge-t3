@@ -49,3 +49,13 @@ To upload the parquet file to S3, run the following command:
 ```sh
 python upload_s3.py <file>
 ```
+
+## Model
+
+This project utilizes the DBSCAN algorithm to identify outliers in the dataset.
+
+- The script for data processing and model execution is located in the `/notebooks` folder.
+- The results of the model execution will be stored in an S3 bucket.
+
+Recommendation:
+- It is recommended to run the script on AWS SageMaker for better performance and direct access to the data.
