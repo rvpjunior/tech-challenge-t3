@@ -100,4 +100,26 @@ We implemented a simple REST API to return the anomalies.
     npm start
     ```
 
-    The API will be available at `http://localhost:3000`.
+    The API will be available at `http://localhost:4000`.
+
+## App
+
+We implemented a simple interface to visualise the anomalies.
+
+### Setup
+
+1. **Install NodeJS Dependencies:**
+    - Ensure you have NodeJS and NPM installed, then install the dependencies:
+
+    ```sh
+    npm install
+    ```
+
+3. **Run the app:**
+    - Start the app:
+
+    ```sh
+    npm run start
+    ```
+
+    The API will be available at `http://localhost:4001`.

@@ -1,7 +1,9 @@
 import express from "express";
+import cors from "cors"
 import { DatabaseClient } from "./DatabaseClient";
 
 const app = express();
+app.use(cors());
 const port = 4000;
 
 const region = process.env.AWS_REGION ?? "ap-southeast-2";
